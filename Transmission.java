@@ -1,5 +1,5 @@
 
-public class Transmission {
+public class Transmission extends ScheduledTransmission {
 	int id ;
 	int src ;
 	int dest ;
@@ -14,7 +14,6 @@ public class Transmission {
 		this.src = a ;
 		this.dest = b ;
 		this.timeStamp = c ;
-//		this.timeReq = time ;
 		this.technology = d;
 		this.isStarted = false ;
 		this.numFrags = e ;
@@ -24,7 +23,19 @@ public class Transmission {
 		System.out.println("Printing transmission: ");
 		System.out.print("ID:"+this.id+" ; Timestamp: "+this.timeStamp+" ; Technology: "+this.technology+"; ");
 		System.out.println("Between :"+this.src+"-->"+this.dest+" ; Fragments: "+this.numFrags);
-//		System.out.println("TimeReq:"+this.timeReq);
+		//System.out.println("TimeReq:"+this.timeReq);
+	}
+	
+	public int getRequiredTime(){
+		int capacity = getCapacity(this.technology) ;
+		if( this.numFrags<=capacity )
+			return 1 ;
+		else{
+			if( this.numFrags%capacity==0 )
+				return (this.numFrags/capacity);
+			else
+				return (this.numFrags/capacity + 1);
+		}
 	}
 	
 }

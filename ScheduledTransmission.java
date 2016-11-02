@@ -13,8 +13,88 @@ public class ScheduledTransmission {
 	 * @throws FileNotFoundException 
 	 */
 	
+	static Graph graph ;
+	static int L ;
+	static ArrayList<Path> paths ;
+	static int maxTime ;
 	static int[] mAlloc ;
 	static float[] qValues ;
+	static int bCapacity = 2;
+	static int wCapacity = 4;
+	static int zCapacity = 3;
+	static ArrayList<Transmission>[] transfers ;
+	
+	public static void printPendingTransmissions(int timeStamp,ArrayList<Transmission>[] transfers){
+		System.out.println("##############");
+		System.out.println("Current timestamp: "+timeStamp);
+		for( int i=0 ; i<maxTime+1; i++ ){
+			System.out.println("Time = "+i+": ");
+			for( int j=0 ; j<transfers[i].size() ; j++ ){
+				transfers[i].get(j).printTransmission() ;
+			}
+			System.out.println("-----------------");
+		}
+		System.out.println("##############");
+	}
+	
+	public static void changeTechnology(int time, int j, int tech) {
+		// TODO Auto-generated method stub
+		Transmission t = transfers[time].get(j) ;
+		int oldTime = t.getRequiredTime() ;
+		t.technology = tech ;
+		//System.out.println("Entered changeTech: "+oldTime+"--"+t.getRequiredTime());
+		if( t.getRequiredTime()>oldTime ){
+			reschedule(t.id,time+1,t.getRequiredTime()-oldTime) ;
+		}
+		transfers[time].set(j, t);
+		//transfers[time].get(j).printTransmission();
+	}
+
+
+	public static void reschedule(int id, int timeStamp,int time ) {
+		// TODO Auto-generated method stub
+		// Should be given a more technical value.
+		int i = 200 ;
+		while( i>=timeStamp ){
+			if( transfers[i].size()!=0 ){
+				for( int j=0 ; j<transfers[i].size() ; j++ ){
+					if( transfers[i].get(j).id==id ){
+						Transmission t = transfers[i].get(j) ;
+						t.timeStamp += time ;
+						transfers[t.timeStamp].add(t);
+						transfers[i].remove(j);
+						j-- ;
+					}
+				}
+			}
+			i-- ;
+		}
+	}
+	
+	public static boolean checkIfTechCanBeChanged(ArrayList<Transmission> completedTr,Transmission tempTr,int tempRange,int newTech){
+		boolean flag = false ;
+		Transmission tempTr1 ;
+		for( int p=0 ; p<completedTr.size() ; p++ ){
+			tempTr1 = completedTr.get(p) ;
+			if( tempTr1.technology==newTech && graph.isPresentInInterferenceRange(tempTr.src, tempTr.dest, tempTr1.src, tempTr1.dest, tempRange) ){
+				return false ;
+			}
+			else if( p==completedTr.size()-1 ){
+				flag = true ;
+			}
+		}
+		
+		return flag ;
+	}
+	
+	public static int getCapacity(int tech){
+		if( tech==0 )
+			return bCapacity ;
+		else if( tech==1 )
+			return wCapacity ;
+		else
+			return zCapacity ;
+	}
 	
 	public static void main(String[] args) throws FileNotFoundException {
 		
@@ -23,7 +103,7 @@ public class ScheduledTransmission {
 		Scanner scanner = new Scanner(inp);
 		
 		// Constructing the network using classes: Graph & Node .
-		Graph graph = new Graph();
+		graph = new Graph();
 		String line ;
 		String[] str ;
 		Node n ;
@@ -84,7 +164,7 @@ public class ScheduledTransmission {
 		scanner.nextLine();
 		int L = scanner.nextInt() ;
 		scanner.nextLine();
-		ArrayList<Path> paths = new ArrayList<Path>() ;
+		paths = new ArrayList<Path>() ;
 		Path tempPath ;
 		scanner.nextLine() ;
 		while( scanner.hasNext() ){
@@ -120,60 +200,39 @@ public class ScheduledTransmission {
 		}
 		System.out.println(Arrays.toString(mAlloc));
 		System.out.println(Arrays.toString(qValues));
-		int maxTime = 0 ;
-		int bCapacity = 2;
-		int wCapacity = 4;
-		int zCapacity = 3;
-		ArrayList<Transmission>[] transfers = new ArrayList[1000] ;
+		maxTime = 0 ;
+		transfers = new ArrayList[1000] ;
 		for( int i=0 ; i<1000; i++ ){
 			transfers[i] = new ArrayList<Transmission>() ;
 		}
-		
 
 		// Scheduling tranmission of the L paths.
-		for( int i=0 ; i<L ; i++ ){
+		int lValue = L ;
+		for( int i=0 ; (i<lValue && i<paths.size()) ; i++ ){
 			if( !paths.get(i).isActive ){
-				paths.remove(i);
-				i-- ;
+				//paths.remove(i);
+				//i-- ;
+				lValue++ ;
 			}
 			else{
 				int curTime = 0;
 				for( int j=0 ; j<paths.get(i).pathSize()-1 ; j++ ){
-					if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(0)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(0) ){
-						transfers[curTime].add(new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,0,mAlloc[i]) );
-						if( mAlloc[i]<bCapacity ){
-							curTime++ ;
-						}
-						else{
-							if( mAlloc[i]%bCapacity==0 )
-								curTime += (mAlloc[i]/bCapacity) ;
-							else
-								curTime += (mAlloc[i]/bCapacity + 1) ;
-						}
+					Transmission t ;
+					//Priority order: Wifi > Zigbee > Bluetooth
+					if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(1)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(1) ){
+						t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,1,mAlloc[i]) ;
+						transfers[curTime].add(t);
+						curTime += t.getRequiredTime() ;
 					}
-					else if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(1)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(1) ){
-						transfers[i].add(new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,1,mAlloc[i]) );
-						if( mAlloc[i]<wCapacity ){
-							curTime++ ;
-						}
-						else{
-							if( mAlloc[i]%wCapacity==0 )
-								curTime += (mAlloc[i]/wCapacity) ;
-							else
-								curTime += (mAlloc[i]/wCapacity + 1) ;
-						}
+					else if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(2)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(2) ){
+						t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,2,mAlloc[i]) ;
+						transfers[curTime].add(t);
+						curTime += t.getRequiredTime() ;
 					}
 					else{
-						transfers[i].add(new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,2,mAlloc[i]) );
-						if( mAlloc[i]<zCapacity ){
-							curTime++ ;
-						}
-						else{
-							if( mAlloc[i]%zCapacity==0 )
-								curTime += (mAlloc[i]/zCapacity) ;
-							else
-								curTime += (mAlloc[i]/zCapacity + 1) ;
-						}
+						t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,0,mAlloc[i]) ;
+						transfers[curTime].add(t);
+						curTime += t.getRequiredTime() ;
 					}
 					if( maxTime<curTime )
 						maxTime = curTime ;
@@ -185,46 +244,88 @@ public class ScheduledTransmission {
 			}
 		}
 		
-		for( int i=0 ; i<maxTime+1; i++ ){
-			System.out.println("Time = "+i+": ");
-			for( int j=0 ; j<transfers[i].size() ; j++ ){
-				transfers[i].get(j).printTransmission() ;
+		// Transmitting data
+		boolean isFinished = false ;
+		int time = 0,numOfTimes=0;
+		while( !isFinished ){
+			printPendingTransmissions(0,transfers);
+			if( transfers[time].size()==0 ){
+				numOfTimes++ ;
+				//Should be handled more carefully and technically
+				if( numOfTimes>10 ){
+					isFinished = true ;
+				}
 			}
-			System.out.println("-----------------");
+			else{
+				numOfTimes = 0;
+				Transmission t ; 
+				// Keeps track of all transmission that took place in current timestamp
+				ArrayList<Transmission> completedTr = new ArrayList<Transmission>() ;
+				for( int j=0 ; j<transfers[time].size() ; j++ ){
+					t = transfers[time].get(j) ;
+					if( t.technology==1 ){
+						int interferenceRange = 2*graph.adj[t.src][t.dest] ;
+						Transmission tempTr ;
+						for( int k=j+1 ; k<transfers[time].size() ; k++ ){
+							tempTr = transfers[time].get(k) ;
+							if( tempTr.technology==1 && graph.isPresentInInterferenceRange(t.src, t.dest, tempTr.src, tempTr.dest, interferenceRange) ){
+								System.out.println("Interference found bwtween "+t.src+"-->"+t.dest+", "+tempTr.src+"-->"+tempTr.dest);
+								int tempRange = 2*graph.adj[tempTr.src][tempTr.dest] ;
+								boolean canTechChange = checkIfTechCanBeChanged(completedTr, tempTr, tempRange,2) ;
+								if( canTechChange ){
+									changeTechnology(time,k,2);
+									System.out.println("Technology of "+tempTr.id+" changed to zigbee");
+								}
+								else if( graph.nodes.get(tempTr.src).techs.get(0)==1 && graph.nodes.get(tempTr.dest).techs.get(0)==1 ){
+									changeTechnology(time,k,0);
+									System.out.println("Technology of "+tempTr.id+" changed to bluetooth");
+								}
+								else{
+									reschedule(tempTr.id, time, 1);
+									System.out.println("Timestamp of "+tempTr.id+" increased by 1");
+								}
+							}
+						}
+					}
+					else if( t.technology==2 ){
+						int interferenceRange = 2*graph.adj[t.src][t.dest] ;
+						Transmission tempTr ;
+						for( int k=j+1 ; k<transfers[time].size() ; k++ ){
+							tempTr = transfers[time].get(k) ;
+							if( tempTr.technology==2 && graph.isPresentInInterferenceRange(t.src, t.dest, tempTr.src, tempTr.dest, interferenceRange) ){
+								System.out.println("Interference found bwtween "+t.src+"-->"+t.dest+", "+tempTr.src+"-->"+tempTr.dest);
+								if( graph.nodes.get(tempTr.src).techs.get(0)==1 && graph.nodes.get(tempTr.dest).techs.get(0)==1 ){
+									changeTechnology(time,k,0);
+									System.out.println("Technology of "+tempTr.id+" changed to bluetooth");
+								}
+								else{
+									reschedule(tempTr.id, time, 1);
+									System.out.println("Timestamp of "+tempTr.id+" increased by 1");
+								}
+							}
+						}
+					}
+					if( t.getRequiredTime()<=1 ){
+						graph.nodes.get(t.src).sBuffer -= t.numFrags ;
+						graph.nodes.get(t.dest).rBuffer += t.numFrags ;
+						graph.nodes.get(t.dest).sBuffer = graph.nodes.get(t.dest).rBuffer ; 
+						transfers[time].remove(j);
+						j-- ;
+					}
+					else{
+						t.numFrags -= getCapacity(t.technology) ;
+						graph.nodes.get(t.src).sBuffer -= t.numFrags ;
+						graph.nodes.get(t.dest).rBuffer += getCapacity(t.technology) ;
+						t.timeStamp++ ;
+						transfers[time+1].add(t);
+						transfers[time].remove(j);
+						j-- ;
+					}
+					completedTr.add(t);
+				}
+			}
+			time++ ;
 		}
-		
-		
-		// Transmit data.
-//		for( int i=0 ; i<sch.transfers.size() ; i++ ){
-//			tempTransfer = sch.transfers.get(i) ;
-//			for( int j=0 ; j<tempTransfer.size() ; j++ ){
-//				if( tempTransfer.get(j).technology!=0 ){
-//					//Code for wi-fi/zigbee transmission
-//					int tempSrc = tempTransfer.get(j).src ;
-//					int tempDest = tempTransfer.get(j).dest ;
-//					for( int k=j+1 ; k<tempTransfer.size() ; k++ ){
-//						if( tempTransfer.get(j).technology==tempTransfer.get(k).technology ){
-//							if( graph.isPresentInInterferenceRange(tempSrc, tempDest, tempTransfer.get(k).src, 2*graph.adj[tempSrc][tempDest])){
-//								sch.reSchedulePath(tempTransfer.get(k).id, i);
-//							}
-//						}
-//					}
-//				}
-//				if( tempTransfer.get(j).timeReq<=1 ){
-//					graph.nodes.get( tempTransfer.get(j).src ).sBuffer-- ;
-//					graph.nodes.get( tempTransfer.get(j).dest ).rBuffer++ ;
-//					graph.nodes.get( tempTransfer.get(j).src ).sBuffer = 0;
-//				}
-//				else{
-//					graph.nodes.get( tempTransfer.get(j).src ).sBuffer-- ;
-//					graph.nodes.get( tempTransfer.get(j).dest ).rBuffer++ ;
-//					tempTransfer.get(j).timeReq-- ;
-//					tempTransfer.get(j).isStarted = true ;
-//					sch.reScheduleTransmission( i,tempTransfer.get(j) ) ;
-//					j-- ;
-//				}
-//			}
-//		}
 	}
 
 }

@@ -5,7 +5,7 @@ public class Node {
 	int id ;
 	int sBuffer ;					//sending buffer
 	int rBuffer ;					//receiving buffer
-	ArrayList<Integer> techs ;
+	ArrayList<Integer> techs ;		//0: Bluetooth, 1: Wi-fi, 2:Zigbee
 	
 	
 	public Node(){

@@ -24,8 +24,8 @@ public class Graph {
 		this.nodes.add(n);
 	}
 	
-	public boolean isPresentInInterferenceRange( int id1, int id2, int id3, int range ){
-		if( adj[id1][id3]<=range || adj[id2][id3]<=range ){
+	public boolean isPresentInInterferenceRange( int id1, int id2, int id3, int id4, int range ){
+		if( adj[id1][id3]<=range || adj[id2][id3]<=range || adj[id1][id4]<=range || adj[id2][id4]<=range ){
 			return true ;
 		}
 		return false ;
