@@ -1,0 +1,12 @@
+########## L value
+2
+########## k paths
+2 0 1 5
+2 3 5
+2 4 5
+######### L-fragment allocated array
+3 4
+######### Q-values of k-paths
+0.1 0.2 0.8
+#########
+

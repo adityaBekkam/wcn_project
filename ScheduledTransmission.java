@@ -180,26 +180,37 @@ public class ScheduledTransmission {
 			paths.add(tempPath) ;
 		}
 		
+		//Reading values of L-array and Q-values.
+		mAlloc = new int[L] ;
+		qValues = new float[paths.size()] ;
+//		Random rand = new Random();
+//		for( int i=0 ; i<L; i++ )
+//			mAlloc[i] = rand.nextInt(5) + 1; 
+//		for( int i=0 ; i<paths.size() ; i++ )
+//			qValues[i] = ( (float)rand.nextInt(i+1)/(float)paths.size() ); 
+		line = scanner.nextLine();
+		str = line.split(" ");
+		for( int i=0 ; i<L ; i++ ){
+			mAlloc[i] = Integer.parseInt(str[i]);
+		}
+		scanner.nextLine();
+		line = scanner.nextLine();
+		str = line.split(" ");
+		for( int i=0 ; i<paths.size() ; i++ ){
+			qValues[i] = Float.parseFloat(str[i]);
+		}
+		scanner.nextLine();
+		
+		
 		//Printing graph and all the 'k' paths.
 		graph.printGraph();
 		for( int i=0 ; i<paths.size(); i++ ){
 			paths.get(i).printPath() ;
 		}
 		System.out.println("------------");
-		
-		//Array of m-values and q-values.
-		//Assigning statically as of now.
-		mAlloc = new int[L] ;
-		Random rand = new Random();
-		for( int i=0 ; i<L; i++ ){
-			mAlloc[i] = rand.nextInt(5) + 1; 
-		}
-		qValues = new float[paths.size()] ;
-		for( int i=0 ; i<paths.size() ; i++ ){
-			qValues[i] = ( (float)rand.nextInt(i+1)/(float)paths.size() ); 
-		}
 		System.out.println(Arrays.toString(mAlloc));
 		System.out.println(Arrays.toString(qValues));
+		
 		maxTime = 0 ;
 		transfers = new ArrayList[1000] ;
 		for( int i=0 ; i<1000; i++ ){
