@@ -269,20 +269,20 @@ public class ScheduledTransmission {
 						for( int k=j+1 ; k<transfers[time].size() ; k++ ){
 							tempTr = transfers[time].get(k) ;
 							if( tempTr.technology==1 && graph.isPresentInInterferenceRange(t.src, t.dest, tempTr.src, tempTr.dest, interferenceRange) ){
-								System.out.println("Interference found bwtween "+t.src+"-->"+t.dest+", "+tempTr.src+"-->"+tempTr.dest);
+								//System.out.println("Interference found bwtween "+t.src+"-->"+t.dest+", "+tempTr.src+"-->"+tempTr.dest);
 								int tempRange = 2*graph.adj[tempTr.src][tempTr.dest] ;
 								boolean canTechChange = checkIfTechCanBeChanged(completedTr, tempTr, tempRange,2) ;
 								if( canTechChange ){
 									changeTechnology(time,k,2);
-									System.out.println("Technology of "+tempTr.id+" changed to zigbee");
+									//System.out.println("Technology of "+tempTr.id+" changed to zigbee");
 								}
 								else if( graph.nodes.get(tempTr.src).techs.get(0)==1 && graph.nodes.get(tempTr.dest).techs.get(0)==1 ){
 									changeTechnology(time,k,0);
-									System.out.println("Technology of "+tempTr.id+" changed to bluetooth");
+									//System.out.println("Technology of "+tempTr.id+" changed to bluetooth");
 								}
 								else{
 									reschedule(tempTr.id, time, 1);
-									System.out.println("Timestamp of "+tempTr.id+" increased by 1");
+									//System.out.println("Timestamp of "+tempTr.id+" increased by 1");
 								}
 							}
 						}
@@ -293,14 +293,14 @@ public class ScheduledTransmission {
 						for( int k=j+1 ; k<transfers[time].size() ; k++ ){
 							tempTr = transfers[time].get(k) ;
 							if( tempTr.technology==2 && graph.isPresentInInterferenceRange(t.src, t.dest, tempTr.src, tempTr.dest, interferenceRange) ){
-								System.out.println("Interference found bwtween "+t.src+"-->"+t.dest+", "+tempTr.src+"-->"+tempTr.dest);
+								//System.out.println("Interference found bwtween "+t.src+"-->"+t.dest+", "+tempTr.src+"-->"+tempTr.dest);
 								if( graph.nodes.get(tempTr.src).techs.get(0)==1 && graph.nodes.get(tempTr.dest).techs.get(0)==1 ){
 									changeTechnology(time,k,0);
-									System.out.println("Technology of "+tempTr.id+" changed to bluetooth");
+									//System.out.println("Technology of "+tempTr.id+" changed to bluetooth");
 								}
 								else{
 									reschedule(tempTr.id, time, 1);
-									System.out.println("Timestamp of "+tempTr.id+" increased by 1");
+									//System.out.println("Timestamp of "+tempTr.id+" increased by 1");
 								}
 							}
 						}
@@ -309,6 +309,7 @@ public class ScheduledTransmission {
 						graph.nodes.get(t.src).sBuffer -= t.numFrags ;
 						graph.nodes.get(t.dest).rBuffer += t.numFrags ;
 						graph.nodes.get(t.dest).sBuffer = graph.nodes.get(t.dest).rBuffer ; 
+						System.out.println("Number of fragments at "+t.dest+"(receiver): "+graph.nodes.get(t.dest).rBuffer);
 						transfers[time].remove(j);
 						j-- ;
 					}
@@ -326,6 +327,7 @@ public class ScheduledTransmission {
 			}
 			time++ ;
 		}
+		
 	}
 
 }
