@@ -18,10 +18,14 @@ public class ScheduledTransmission {
 	static ArrayList<Path> paths ;
 	static int maxTime ;
 	static int[] mAlloc ;
-	static float[] qValues ;
+	static double[] qValues ;
 	static int bCapacity = 2;
 	static int wCapacity = 4;
 	static int zCapacity = 3;
+	static int source ;
+	static int destination;
+	static int sentFragments ;
+	static int receivedFragments ;
 	static ArrayList<Transmission>[] transfers ;
 	
 	public static void printPendingTransmissions(int timeStamp,ArrayList<Transmission>[] transfers){
@@ -174,6 +178,8 @@ public class ScheduledTransmission {
 			}
 			tempPath = new Path();
 			str = line.split(" ") ;
+			source = Integer.parseInt(str[0]) ;
+			destination = Integer.parseInt(str[str.length-1]) ;
 			for( int i=0 ; i<str.length ; i++ ){
 				tempPath.addNodeToRoute( Integer.parseInt(str[i]) ) ;
 			}
@@ -182,7 +188,7 @@ public class ScheduledTransmission {
 		
 		//Reading values of L-array and Q-values.
 		mAlloc = new int[L] ;
-		qValues = new float[paths.size()] ;
+		qValues = new double[paths.size()] ;
 //		Random rand = new Random();
 //		for( int i=0 ; i<L; i++ )
 //			mAlloc[i] = rand.nextInt(5) + 1; 
@@ -190,14 +196,16 @@ public class ScheduledTransmission {
 //			qValues[i] = ( (float)rand.nextInt(i+1)/(float)paths.size() ); 
 		line = scanner.nextLine();
 		str = line.split(" ");
+		sentFragments = 0;
 		for( int i=0 ; i<L ; i++ ){
 			mAlloc[i] = Integer.parseInt(str[i]);
+			sentFragments += mAlloc[i] ;
 		}
 		scanner.nextLine();
 		line = scanner.nextLine();
 		str = line.split(" ");
 		for( int i=0 ; i<paths.size() ; i++ ){
-			qValues[i] = Float.parseFloat(str[i]);
+			qValues[i] = Double.parseDouble(str[i]);
 		}
 		scanner.nextLine();
 		
@@ -226,32 +234,40 @@ public class ScheduledTransmission {
 				lValue++ ;
 			}
 			else{
-				int curTime = 0;
-				for( int j=0 ; j<paths.get(i).pathSize()-1 ; j++ ){
-					Transmission t ;
-					//Priority order: Wifi > Zigbee > Bluetooth
-					if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(1)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(1) ){
-						t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,1,mAlloc[i]) ;
-						transfers[curTime].add(t);
-						curTime += t.getRequiredTime() ;
-					}
-					else if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(2)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(2) ){
-						t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,2,mAlloc[i]) ;
-						transfers[curTime].add(t);
-						curTime += t.getRequiredTime() ;
-					}
-					else{
-						t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,0,mAlloc[i]) ;
-						transfers[curTime].add(t);
-						curTime += t.getRequiredTime() ;
-					}
-					if( maxTime<curTime )
-						maxTime = curTime ;
-					if( j==0 )
-						graph.nodes.get( paths.get(i).route.get(j) ).sBuffer = mAlloc[i] ;
+				Random rand = new Random();
+				double randNum = rand.nextDouble() ;
+				System.out.println(randNum);
+				if( randNum>qValues[i]  ){
+					paths.get(i).isActive = false;
 				}
-				if( Math.random()<= qValues[i] )
-					paths.get(i).isActive = false; 
+				else{
+					int curTime = 0;
+					for( int j=0 ; j<paths.get(i).pathSize()-1 ; j++ ){
+						Transmission t ;
+						//Priority order: Wifi > Zigbee > Bluetooth
+						if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(1)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(1) ){
+							t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,1,mAlloc[i]) ;
+							transfers[curTime].add(t);
+							curTime += t.getRequiredTime() ;
+						}
+						else if( graph.nodes.get( paths.get(i).route.get(j)).techs.get(2)==1 && 1==graph.nodes.get( paths.get(i).route.get(j+1)).techs.get(2) ){
+							t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,2,mAlloc[i]) ;
+							transfers[curTime].add(t);
+							curTime += t.getRequiredTime() ;
+						}
+						else{
+							t = new Transmission(i,paths.get(i).route.get(j),paths.get(i).route.get(j+1),curTime,0,mAlloc[i]) ;
+							transfers[curTime].add(t);
+							curTime += t.getRequiredTime() ;
+						}
+						if( maxTime<curTime )
+							maxTime = curTime ;
+						if( j==0 )
+							graph.nodes.get( paths.get(i).route.get(j) ).sBuffer = mAlloc[i] ;
+
+					}
+				
+				}
 			}
 		}
 		
@@ -259,15 +275,16 @@ public class ScheduledTransmission {
 		boolean isFinished = false ;
 		int time = 0,numOfTimes=0;
 		while( !isFinished ){
-			printPendingTransmissions(0,transfers);
+			//printPendingTransmissions(0,transfers);
 			if( transfers[time].size()==0 ){
 				numOfTimes++ ;
 				//Should be handled more carefully and technically
-				if( numOfTimes>10 ){
+				if( numOfTimes>30 ){
 					isFinished = true ;
 				}
 			}
 			else{
+				printPendingTransmissions(0,transfers);
 				numOfTimes = 0;
 				Transmission t ; 
 				// Keeps track of all transmission that took place in current timestamp
@@ -320,7 +337,7 @@ public class ScheduledTransmission {
 						graph.nodes.get(t.src).sBuffer -= t.numFrags ;
 						graph.nodes.get(t.dest).rBuffer += t.numFrags ;
 						graph.nodes.get(t.dest).sBuffer = graph.nodes.get(t.dest).rBuffer ; 
-						System.out.println("Number of fragments at "+t.dest+"(receiver): "+graph.nodes.get(t.dest).rBuffer);
+						//System.out.println("Number of fragments at "+t.dest+"(receiver): "+graph.nodes.get(t.dest).rBuffer);
 						transfers[time].remove(j);
 						j-- ;
 					}
@@ -338,6 +355,11 @@ public class ScheduledTransmission {
 			}
 			time++ ;
 		}
+		receivedFragments = graph.nodes.get(destination).rBuffer ;
+		
+		System.out.println("Number of Fragments sent: "+sentFragments);
+		System.out.println("Number of Fragments received: "+receivedFragments);
+		System.out.println("Packet Drop Ratio: "+((double)receivedFragments/(double)sentFragments));
 		
 	}
 
