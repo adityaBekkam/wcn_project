@@ -55,8 +55,8 @@ def check(a,n,k):
 
 
 def main():
-    nodeCount = 5
-    connectivity = 2
+    nodeCount = eval(raw_input())
+    connectivity = eval(raw_input())
     A = poissongraph(nodeCount,connectivity)
     #print A.edges()
     
@@ -117,13 +117,13 @@ def main():
             print " ",
         print "\n",
     print("########## Edge Presense")    
-    for i in distance:
+    for i in edge:
         for j in i:
             print '{:d}'.format(trunc(j)),
             print " ",
         print "\n",
     print("######### Distances")
-    for i in edge:
+    for i in distance:
         for j in i:
             print '{:d}'.format(trunc(j)),
             print " ",
