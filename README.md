@@ -2,7 +2,9 @@
 
 //First part of the code
 
-//Swetha, fill this
+python generator.py > new_graph.txt     // new_graph.txt is created 
+6                                      // No.of nodes
+2                                      // connectivity
 
 //Second part of the code
 
