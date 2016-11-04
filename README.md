@@ -6,7 +6,7 @@
 
 //Second part of the code
 
-// fill this
+python code.py > paths.txt   // graph.txt should be inp file. This code handles running BFS to find disjoin paths frm src to des, and allocating fragments to it based on the proposed algo
 
 //Last part of the code:
 
