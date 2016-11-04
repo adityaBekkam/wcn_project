@@ -19,7 +19,7 @@ def bfs_paths(graph, start, goal):
 
 #### Scanning the input required from file
 fragments_n = input()
-infile=open("graph.txt")
+infile=open("new_graph.txt")
 indata=infile.readlines()
 interfaces = []
 infile.close()
@@ -31,7 +31,7 @@ stage=0
 #inputs 
 start = 2
 goal = 5
-top_l=2
+top_l= input()
 ######
 indata = indata[:-1]
 
@@ -48,7 +48,7 @@ for i in indata:
 		if stage == 0:
 			l =i.split(' ')
 			l = [int(j) for j in l if (j != '' and j !='\n')]
-			interfaces.append(l[1:])
+			interfaces.append(l)
 			nodes_n = nodes_n + 1
 		elif stage == 1:
 			l =i.split(" ")
@@ -70,7 +70,7 @@ for i in range(0,nodes_n):
 #1-wifi
 #2-zigbee
 
-###### Getting all paths by caaling bfs function
+###### Getting all paths by calling bfs function
 all_paths = list(bfs_paths(graph, start, goal))
 top_k = len(all_paths)
 interface2=[]

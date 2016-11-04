@@ -30,7 +30,7 @@ public class ScheduledTransmission {
 	
 	public static void printPendingTransmissions(int timeStamp,ArrayList<Transmission>[] transfers){
 		System.out.println("##############");
-		System.out.println("Current timestamp: "+timeStamp);
+		//System.out.println("Current timestamp: "+timeStamp);
 		for( int i=0 ; i<maxTime+1; i++ ){
 			System.out.println("Time = "+i+": ");
 			for( int j=0 ; j<transfers[i].size() ; j++ ){
@@ -115,6 +115,7 @@ public class ScheduledTransmission {
 		
 		// Node technologies information
 		scanner.nextLine();
+		int nodeIndex = 0;
 		while( scanner.hasNext() ){
 			line = scanner.nextLine() ;
 			if( line.startsWith("#") ){
@@ -122,10 +123,11 @@ public class ScheduledTransmission {
 			}
 			str = line.split(" ");
 			tempLst = new ArrayList<Integer>();
+			tempLst.add( Integer.parseInt(str[0]) );
 			tempLst.add( Integer.parseInt(str[1]) );
 			tempLst.add( Integer.parseInt(str[2]) );
-			tempLst.add( Integer.parseInt(str[3]) );
-			n = new Node(Integer.parseInt(str[0]),tempLst) ;
+			n = new Node(nodeIndex,tempLst) ;
+			nodeIndex++ ;
 			graph.addNode(n) ;
 		}
 		
@@ -236,7 +238,7 @@ public class ScheduledTransmission {
 			else{
 				Random rand = new Random();
 				double randNum = rand.nextDouble() ;
-				System.out.println(randNum);
+				//System.out.println(randNum);
 				if( randNum>qValues[i]  ){
 					paths.get(i).isActive = false;
 				}
@@ -359,8 +361,7 @@ public class ScheduledTransmission {
 		
 		System.out.println("Number of Fragments sent: "+sentFragments);
 		System.out.println("Number of Fragments received: "+receivedFragments);
-		System.out.println("Packet Drop Ratio: "+((double)receivedFragments/(double)sentFragments));
-		
+		System.out.println("Packet Drop Ratio: "+(1-((double)receivedFragments/(double)sentFragments)));
 	}
 
 }

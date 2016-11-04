@@ -114,19 +114,19 @@ def main():
     for i in node:
         for j in i:
             print '{:d}'.format(trunc(j)),
-            print " ",
+            #print " ",
         print "\n",
     print("########## Edge Presense")    
     for i in edge:
         for j in i:
             print '{:d}'.format(trunc(j)),
-            print " ",
+            #print " ",
         print "\n",
     print("######### Distances")
     for i in distance:
         for j in i:
             print '{:d}'.format(trunc(j)),
-            print " ",
+            #print " ",
         print "\n",  
    
 
