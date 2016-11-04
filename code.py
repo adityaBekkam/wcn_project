@@ -18,7 +18,7 @@ def bfs_paths(graph, start, goal):
                     queue.append((next, path + [next]))
 
 #### Scanning the input required from file
-fragments_n = input("Enter num of fragments")
+fragments_n = input()
 infile=open("graph.txt")
 indata=infile.readlines()
 interfaces = []
