@@ -18,6 +18,7 @@ def bfs_paths(graph, start, goal):
                     queue.append((next, path + [next]))
 
 #### Scanning the input required from file
+fragments_n = input("Enter num of fragments")
 infile=open("graph.txt")
 indata=infile.readlines()
 interfaces = []
@@ -120,7 +121,7 @@ for i in range(0,top_k):
 	
 C_l.sort(key = lambda d:d[3],reverse=True)
 rate = 0.25 * 8  								#0.25 Mbps
-fragments_n = 10
+#fragments_n = 10
 frag_size = 0.25								#0.25 Mb
 
 counter = fragments_n
