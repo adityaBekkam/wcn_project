@@ -1,3 +1,4 @@
+#importing modules
 import numpy as np
 from scipy.stats import poisson
 import networkx as nx
@@ -55,12 +56,17 @@ def check(a,n,k):
 
 
 def main():
+    #reading number of nodes and connectivity from user
     nodeCount = eval(raw_input())
     connectivity = eval(raw_input())
+    
+    #calling the function poissongraph() with nodecount and connectivity as input to generate a k connected graph
     A = poissongraph(nodeCount,connectivity)
     #print A.edges()
     
+    #B stores the list of edges
     B = list(set(A.edges()))
+    
     for i in B:
         if(i[0] == i[1]):
             B.remove(i)
